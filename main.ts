@@ -28,6 +28,16 @@ export interface RateLimitedFunction<T extends Array<unknown>, R> {
 }
 
 /**
+ * Rate-limiting options.
+ */
+export interface RateLimitOptions {
+  /**
+   * The timeframe in milliseconds.
+   */
+  timeframe: number;
+}
+
+/**
  * Creates a rate-limited function that prevents the given `fn` from being called more than once per `timeframe` (in milliseconds).
  *
  * @example Usage
@@ -46,7 +56,7 @@ export interface RateLimitedFunction<T extends Array<unknown>, R> {
  * const timeframe = 1000;
  * const func = rateLimit<[string], void>(
  *   (url) => fetch(url).then((r) => r.body?.cancel()),
- *   timeframe,
+ *   { timeframe },
  * );
  *
  * const startTime = Date.now();
@@ -69,12 +79,12 @@ export interface RateLimitedFunction<T extends Array<unknown>, R> {
  * await using
  *
  * @param fn The function to rate-limit
- * @param timeframe The timeframe in milliseconds in which the function should be called at most once
+ * @param options The rate-limiting options
  * @returns The rate-limited function
  */
 export function rateLimit<T extends Array<unknown>, R>(
   fn: (this: RateLimitedFunction<T, R>, ...args: T) => R | PromiseLike<R>,
-  timeframe: number,
+  options: { timeframe: number },
 ): RateLimitedFunction<T, R> {
   let ready = true;
   const pending: (() => void)[] = [];
@@ -101,7 +111,7 @@ export function rateLimit<T extends Array<unknown>, R>(
       } else {
         ready = true;
       }
-    }, timeframe);
+    }, options.timeframe);
   };
 
   const rateLimited = ((...args: T): Promise<R> => {

@@ -11,7 +11,7 @@ import { expect } from "@std/expect";
 
 Deno.test("rateLimit() handles called", async () => {
   let called = 0;
-  const t = rateLimit(() => called++, 100);
+  const t = rateLimit(() => called++, { timeframe: 100 });
   assertEquals(t.pending, 0);
   t();
   t();
@@ -27,7 +27,7 @@ Deno.test("rateLimit() handles called", async () => {
 
 Deno.test("rateLimit() handles clear", () => {
   let called = 0;
-  const t = rateLimit(() => called++, 100);
+  const t = rateLimit(() => called++, { timeframe: 100 });
   t();
   t();
   t();
@@ -45,7 +45,7 @@ Deno.test("rateLimit() handles flush", async () => {
   const t = rateLimit((_arg: string) => {
     arg = _arg;
     called++;
-  }, 100);
+  }, { timeframe: 100 });
   t("foo");
   t("bar");
   t("baz");
@@ -67,7 +67,7 @@ Deno.test("rateLimit() handles params and context", async () => {
       params.push(param2);
       assertStrictEquals(t, this);
     },
-    100,
+    { timeframe: 100 },
   );
   t("foo", 1);
   t("bar", 1);
@@ -85,7 +85,7 @@ Deno.test("rateLimit() handles params and context", async () => {
 
 Deno.test("rateLimit() handles close", () => {
   let called = 0;
-  const t = rateLimit(() => called++, 100);
+  const t = rateLimit(() => called++, { timeframe: 100 });
   t();
   t();
   t();
@@ -96,8 +96,10 @@ Deno.test("rateLimit() handles close", () => {
 });
 
 Deno.test("rateLimit() handles results", async () => {
-  const t1 = rateLimit((x: number) => x * 2, 100);
-  const t2 = rateLimit((x: number) => Promise.resolve(x * 2), 100);
+  const t1 = rateLimit((x: number) => x * 2, { timeframe: 100 });
+  const t2 = rateLimit((x: number) => Promise.resolve(x * 2), {
+    timeframe: 100,
+  });
   const results = await Promise.all([t1(1), t1(2), t1(3), t2(1), t2(2), t2(3)]);
   assertEquals(results, [2, 4, 6, 2, 4, 6]);
   t1.clear();
@@ -109,8 +111,10 @@ Deno.test("rateLimit() handles results", async () => {
 Deno.test("rateLimit() handles errors", async () => {
   const t1 = rateLimit(() => {
     throw new Error("foo");
-  }, 100);
-  const t2 = rateLimit(() => Promise.reject(new Error("bar")), 100);
+  }, { timeframe: 100 });
+  const t2 = rateLimit(() => Promise.reject(new Error("bar")), {
+    timeframe: 100,
+  });
   await expect(t1()).rejects.toThrow("foo");
   await expect(t2()).rejects.toThrow("bar");
   t1.clear();
