@@ -22,6 +22,7 @@ Deno.test("rateLimit() handles called", async () => {
   assertEquals(called, 3);
   assertEquals(t.pending, 0);
   t.clear();
+  t.close();
 });
 
 Deno.test("rateLimit() handles clear", () => {
@@ -35,6 +36,7 @@ Deno.test("rateLimit() handles clear", () => {
   t.clear();
   assertLessOrEqual(called, 1);
   assertEquals(t.pending, 0);
+  t.close();
 });
 
 Deno.test("rateLimit() handles flush", async () => {
@@ -54,6 +56,7 @@ Deno.test("rateLimit() handles flush", async () => {
   assertEquals(called, 3);
   assertEquals(arg, "baz");
   assertEquals(t.pending, 0);
+  t.close();
 });
 
 Deno.test("rateLimit() handles params and context", async () => {
@@ -77,6 +80,7 @@ Deno.test("rateLimit() handles params and context", async () => {
   assertEquals(params, ["foo", 1, "bar", 1, "baz", 1]);
   assertEquals(t.pending, 1);
   t.clear();
+  t.close();
 });
 
 Deno.test("rateLimit() handles close", () => {
