@@ -1,4 +1,5 @@
 import { assert } from "@std/assert/assert";
+import process from "node:process";
 
 /**
  * A rate-limited function that will be executed at most once per `timeframe` (in milliseconds), queuing calls if necessary.
@@ -152,7 +153,10 @@ export function rateLimit<T extends Array<unknown>, R>(
       clearTimeout(currentTimeout);
       currentTimeout = null;
     }
+    process.off("exit", rateLimited.close);
   };
+
+  process.on("exit", rateLimited.close);
 
   Object.defineProperties(rateLimited, {
     pending: {
