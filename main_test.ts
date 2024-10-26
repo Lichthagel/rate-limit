@@ -94,3 +94,27 @@ Deno.test("rateLimit() handles close", () => {
   expect(() => t.close()).not.toThrow();
   expect(() => t()).toThrow();
 });
+
+Deno.test("rateLimit() handles results", async () => {
+  const t1 = rateLimit((x: number) => x * 2, 100);
+  const t2 = rateLimit((x: number) => Promise.resolve(x * 2), 100);
+  const results = await Promise.all([t1(1), t1(2), t1(3), t2(1), t2(2), t2(3)]);
+  assertEquals(results, [2, 4, 6, 2, 4, 6]);
+  t1.clear();
+  t1.close();
+  t2.clear();
+  t2.close();
+});
+
+Deno.test("rateLimit() handles errors", async () => {
+  const t1 = rateLimit(() => {
+    throw new Error("foo");
+  }, 100);
+  const t2 = rateLimit(() => Promise.reject(new Error("bar")), 100);
+  await expect(t1()).rejects.toThrow("foo");
+  await expect(t2()).rejects.toThrow("bar");
+  t1.clear();
+  t1.close();
+  t2.clear();
+  t2.close();
+});
