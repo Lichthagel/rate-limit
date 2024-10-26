@@ -1,4 +1,4 @@
-import { assert } from "@std/assert/assert";
+import assert from "node:assert";
 import process from "node:process";
 
 /**
